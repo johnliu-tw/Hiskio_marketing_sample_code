@@ -87,6 +87,7 @@ try:
                         content = content + show_content.text + '。'
                     for hide_content in hide_contents:
                         content = content + hide_content.text + '。'
+                content = content.replace("'", "\'").replace('"', '\"')
                 print('content: ' + content)
                 if(len(article.select('tr._51mx')) > 0):
                     attach = article.select('td._51m-.vMid.hLeft span')[0].text.replace(',', '')
@@ -156,6 +157,7 @@ try:
                 replied_comments = article.select('span._3l3x')
                 for replied_comment in replied_comments:
                     replied_text = replied_comment.text
+                    replied_text = replied_text.replace("'", "\'").replace('"', '\"')
                     sql = ''' INSERT INTO fb_social_data.replies(comment, post_id) 
                               VALUES('{}', '{}')'''.format(replied_text, post_id)
                     cursor.execute(sql)
