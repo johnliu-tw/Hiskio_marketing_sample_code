@@ -73,7 +73,7 @@ try:
                 date = article.select('span.body')[1].text.strip().replace(' 年 ', '-').replace(' 月 ', '-').replace(' 日 ', '-')
                 date = date[0:10]
                 tags = article.select('span.body')[2].select('a')
-                iframe = article.select('iframe')[1]
+                iframe = article.select('div.indexfb iframe')[0]
                 response = urllib.request.urlopen(iframe.attrs['src'])
                 iframe_soup = BeautifulSoup(response)
                 share = iframe_soup.select('span#u_0_2')[0].text
