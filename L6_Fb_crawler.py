@@ -93,14 +93,14 @@ try:
                     date_text = time_flag_content.text
                     date = parse_date(date_text)
                     print(date)
-                    if( date != False and date > '2016-11-15' ):
+                    if( date != False and date > deadline ):
                         pass
                     elif( date == False ):
                         pass
                     else:
                         keep_craw = False
                         break
-                # 抓出 post or photo 的 id 與時間
+                # 抓出 post, photo, video 的 id
                 time_element = driver.find_element_by_xpath("//div[@aria-label='{}']".format(date_text))
                 ActionChains(driver).move_to_element(time_element).perform()
                 time_element = driver.find_element_by_xpath("//a[@aria-label='{}']".format(date_text))
