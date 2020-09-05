@@ -129,7 +129,7 @@ try:
                 sourceCode = BeautifulSoup(driver.page_source)
                 article_box = sourceCode.select('div.k4urcfbm.dp1hu0rb.d2edcug0.cbu4d94t.j83agx80.bp9cbjyn')[0]
                 article = article_box.select('[class="lzcic4wl"][role="article"][aria-labelledby="{}"]'.format(article_id))[0]
-                # 獲得切文資料
+                # 獲得貼文資料
                 show_contents = article.select('span.oi732d6d.ik7dh3pa.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.a8c37x1j.muag1w35.enqfppq2.jq4qci2q.a3bd9o3v.knj5qynh.oo9gr5id.hzawbc8m > div')
                 for show_content in show_contents:
                     content = content + show_content.text + '。'
