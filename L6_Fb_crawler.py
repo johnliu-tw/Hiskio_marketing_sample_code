@@ -8,6 +8,7 @@ from datetime import datetime, date, timedelta
 import pymysql.cursors
 import traceback
 from dotenv import load_dotenv
+import ipdb
 load_dotenv()
 deadline = str(date.today() + timedelta(weeks= -26))
                
@@ -61,7 +62,22 @@ try:
             time.sleep(3)
         content_ids = []
         keep_craw = True
+        # 取消 whatapp 詢問連結
+        close_btns = driver.find_elements_by_css_selector('div.oajrlxb2.tdjehn4e.qu0x051f.esr5mh6w.e9989ue4.r7d6kgcz.rq0escxv.nhd2j8a9.j83agx80.p7hjln8o.kvgmc6g5.cxmmr5t8.oygrvhab.hcukyx3x.jb3vyjys.rz4wbd8a.qt6c0cv9.a8nywdso.i1ao9s8h.esuyzwwr.f1sip0of.lzcic4wl.l9j0dhe7.abiwlrkh.p8dawk7l.bp9cbjyn.s45kfl79.emlxlaya.bkmhp75w.spb7xbtv.rt8b4zig.n8ej3o3l.agehan2d.sk4xxmp2.taijpn5t.tv7at329.thwo4zme')
+        for close_btn in close_btns:
+            if close_btn.get_attribute('aria-label') == '關閉':
+              close_btn.click()
+        facebook_primary_btns = driver.find_elements_by_css_selector('div.rq0escxv.l9j0dhe7.du4w35lb.j83agx80.pfnyh3mw.taijpn5t.bp9cbjyn.owycx6da.btwxx1t3.kt9q3ron.ak7q8e6j.isp2s0ed.ri5dt5u2.rt8b4zig.n8ej3o3l.agehan2d.sk4xxmp2.ni8dbmo4.stjgntxs.tkv8g59h.fl8dtwsd.s1i5eluu.tv7at329')
+        for primary_btn in facebook_primary_btns:
+            if primary_btn.get_attribute('innerText') == '退出':
+              primary_btn.click()
         while keep_craw:
+            # 開啟連結
+            path_elements_by_selenium = driver.find_elements_by_css_selector('a.oajrlxb2.g5ia77u1.qu0x051f.esr5mh6w.e9989ue4.r7d6kgcz.rq0escxv.nhd2j8a9.nc684nl6.p7hjln8o.kvgmc6g5.cxmmr5t8.oygrvhab.hcukyx3x.jb3vyjys.rz4wbd8a.qt6c0cv9.a8nywdso.i1ao9s8h.esuyzwwr.f1sip0of.lzcic4wl.gmql0nx0.gpro0wi8.b1v8xokw')
+            for path_element_by_selenium in path_elements_by_selenium:
+                if path_element_by_selenium.get_attribute('href') == 'https://www.facebook.com/farmbridger/#':
+                    ActionChains(driver).move_to_element(path_element_by_selenium).perform()
+
             # 頁面程式碼初始化
             sourceCode = BeautifulSoup(driver.page_source)
             article_box = sourceCode.select('div.k4urcfbm.dp1hu0rb.d2edcug0.cbu4d94t.j83agx80.bp9cbjyn')[0]
@@ -88,7 +104,7 @@ try:
                 content_ids.append(content_id)
 
                 # 檢查時間
-                time_flag_contents = article.select('div.oajrlxb2.g5ia77u1.qu0x051f.esr5mh6w.e9989ue4.r7d6kgcz.rq0escxv.nhd2j8a9.nc684nl6.p7hjln8o.kvgmc6g5.cxmmr5t8.oygrvhab.hcukyx3x.jb3vyjys.rz4wbd8a.qt6c0cv9.a8nywdso.i1ao9s8h.esuyzwwr.f1sip0of.lzcic4wl.gmql0nx0.gpro0wi8.b1v8xokw')
+                time_flag_contents = article.select('span.j1lvzwm')
                 for time_flag_content in time_flag_contents:
                     date_text = time_flag_content.text
                     date = parse_date(date_text)
@@ -101,10 +117,12 @@ try:
                         keep_craw = False
                         break
                 # 抓出 post, photo, video 的 id
-                time_element = driver.find_element_by_xpath("//div[@aria-label='{}']".format(date_text))
-                ActionChains(driver).move_to_element(time_element).perform()
-                time_element = driver.find_element_by_xpath("//a[@aria-label='{}']".format(date_text))
-                post_path = time_element.get_attribute('href')
+                path_elements = article.select('a.oajrlxb2.g5ia77u1.qu0x051f.esr5mh6w.e9989ue4.r7d6kgcz.rq0escxv.nhd2j8a9.nc684nl6.p7hjln8o.kvgmc6g5.cxmmr5t8.oygrvhab.hcukyx3x.jb3vyjys.rz4wbd8a.qt6c0cv9.a8nywdso.i1ao9s8h.esuyzwwr.f1sip0of.lzcic4wl.gmql0nx0.gpro0wi8.b1v8xokw')
+                time_element = ''
+                for path_element in path_elements:
+                    if path_element.text.find('年') != -1:
+                        time_element  = path_element
+                post_path = time_element['href']
                 if post_path.find('/posts/') > 0:
                     start = post_path.find('/posts/') + 7
                     end = post_path.find('?')
@@ -130,24 +148,23 @@ try:
                 article_box = sourceCode.select('div.k4urcfbm.dp1hu0rb.d2edcug0.cbu4d94t.j83agx80.bp9cbjyn')[0]
                 article = article_box.select('[class="lzcic4wl"][role="article"][aria-labelledby="{}"]'.format(article_id))[0]
                 # 獲得貼文資料
-                show_contents = article.select('span.oi732d6d.ik7dh3pa.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.a8c37x1j.muag1w35.enqfppq2.jq4qci2q.a3bd9o3v.knj5qynh.oo9gr5id.hzawbc8m > div')
+                show_contents = article.select('span.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.oi732d6d.ik7dh3pa.ht8s03o8.a8c37x1j.keod5gw0.nxhoafnm.aigsh9s9.d9wwppkn.fe6kdd0r.mau55g9w.c8b282yb.iv3no6db.jq4qci2q.a3bd9o3v.knj5qynh.oo9gr5id.hzawbc8m > div')
                 for show_content in show_contents:
                     content = content + show_content.text + '。'
                 content = content.replace("'", "\'").replace('"', '\"')
                 print('content: ' + content)
                 # 獲得廣告成效資料
-                attach_number = article.select('span.oi732d6d.ik7dh3pa.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.a8c37x1j.muag1w35.enqfppq2.jq4qci2q.a3bd9o3v.lrazzd5p.oo9gr5id.hzawbc8m')
+
+                attach_number = article.select('span.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.oi732d6d.ik7dh3pa.ht8s03o8.a8c37x1j.keod5gw0.nxhoafnm.aigsh9s9.d9wwppkn.fe6kdd0r.mau55g9w.c8b282yb.iv3no6db.jq4qci2q.a3bd9o3v.lrazzd5p.oo9gr5id.hzawbc8m')
                 attach = attach_number[0].text.replace(',', '')
                 interactive = attach_number[1].text.replace(',', '')
                 promotion_element = article.select('div.pybr56ya.scb9dxdr.dflh9lhu.f10w8fjw.cbu4d94t.a8c37x1j')
                 if(len(promotion_element) > 0):
-                    
-                    promotion_string = promotion_element[0].select('span.oi732d6d.ik7dh3pa.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.a8c37x1j.muag1w35.dco85op0.e9vueds3.j5wam9gi.knj5qynh.oo9gr5id.hzawbc8m')[0].text
+                    promotion_string = promotion_element[0].select('span.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.oi732d6d.ik7dh3pa.ht8s03o8.a8c37x1j.keod5gw0.nxhoafnm.aigsh9s9.d9wwppkn.fe6kdd0r.mau55g9w.c8b282yb.mdeji52x.e9vueds3.j5wam9gi.knj5qynh.oo9gr5id.hzawbc8m')[0].text
                     promotion_date = promotion_string.split('：')[1]
-                    promotion_number = promotion_element[0].select('span.a8c37x1j.ni8dbmo4.stjgntxs.l9j0dhe7.ltmttdrg.g0qnabr5.oi732d6d.ik7dh3pa.d2edcug0.hpfvmrgz.qv66sw1b.c1et5uql.muag1w35.enqfppq2.jq4qci2q.a3bd9o3v.lrazzd5p.oo9gr5id.hzawbc8m')
+                    promotion_number = promotion_element[0].select('span.a8c37x1j.ni8dbmo4.stjgntxs.l9j0dhe7.ltmttdrg.g0qnabr5')
                     promotion_attach = promotion_number[0].text.replace(',', '')
                     promotion_interactive = promotion_number[1].text.replace(',', '')
-
                     print('promotion_date: ' + promotion_date)
                     print('promotion_attach: ' + promotion_attach)
                     print('promotion_interactive: ' + promotion_interactive)
